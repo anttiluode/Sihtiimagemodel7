@@ -125,8 +125,8 @@ learned from photographs, sized by cortical magnification. Behind the front, a b
 in and heals. The shimmer is deliberately slow (under three changes a second) and stops under
 reduced-motion settings. It is a model made to show the idea, not a medical description.
 
-Run it on the webcam: enable GitHub Pages for this repo (Settings → Pages → Deploy from branch →
-`main`, folder `/docs`), then open the page and press **Use camera**. Or open `docs/index.html`
+Run it on the webcam: open **https://anttiluode.github.io/Sihtiimagemodel7/** (published by the
+repo's Pages workflow) and press **Use camera**. Or open `docs/index.html`
 locally and use a photo. Rebuild after changing atoms: `python web/build.py`.
 
 ## Run it

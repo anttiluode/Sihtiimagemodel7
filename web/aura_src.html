@@ -1,0 +1,297 @@
+<title>Fortification Spectrum</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,600&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a viewing bench. The visual field is the specimen, large on the left;
+   the cortex map and the instrument controls sit beside it like a lab notebook column. */
+:root {
+  --bg: #f3f1ec; --panel: #e8e5dd; --ink: #1d1f22; --muted: #5d6066; --rule: #cfcac0;
+  --accent: #a3471b; --cool: #2f5d8a; --field: #111214;
+  --display: "Newsreader", Georgia, "Times New Roman", serif;
+  --body: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #141518; --panel: #1c1e22; --ink: #e7e4dd; --muted: #9a9ca3;
+    --rule: #2e3036; --accent: #e08a55; --cool: #7fb0dd; --field: #0b0c0e; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --bg: #141518; --panel: #1c1e22; --ink: #e7e4dd; --muted: #9a9ca3;
+  --rule: #2e3036; --accent: #e08a55; --cool: #7fb0dd; --field: #0b0c0e; color-scheme: dark; }
+
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 40px; }
+.wrap { max-width: 1120px; margin: 0 auto; display: grid; gap: 20px; }
+header { display: grid; gap: 4px; }
+h1 { font-family: var(--display); font-weight: 600; font-size: clamp(28px, 4vw, 40px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { color: var(--muted); max-width: 68ch; margin: 0; }
+.bench { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 20px; align-items: start; }
+@media (max-width: 860px) { .bench { grid-template-columns: minmax(0, 1fr); } }
+.specimen { display: grid; gap: 8px; min-width: 0; }
+.fieldbox { position: relative; background: var(--field); border-radius: 6px; overflow: hidden; }
+#field { display: block; width: 100%; height: auto; aspect-ratio: 3 / 2; cursor: crosshair; }
+.readout { display: flex; flex-wrap: wrap; gap: 6px 18px; font-family: var(--mono); font-size: 12px; color: var(--muted);
+  font-variant-numeric: tabular-nums; }
+.readout b { color: var(--ink); font-weight: 500; }
+aside { display: grid; gap: 14px; background: var(--panel); border-radius: 6px; padding: 14px; min-width: 0; }
+.label { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 600; margin: 0 0 6px; }
+#cortex { display: block; width: 100%; height: auto; aspect-ratio: 1 / 1; border-radius: 4px; background: var(--field); }
+.cap { font-size: 12px; color: var(--muted); margin: 6px 0 0; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; }
+button, .file { font: 500 13px var(--body); color: var(--ink); background: var(--bg); border: 1px solid var(--rule);
+  border-radius: 4px; padding: 7px 12px; cursor: pointer; }
+button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+button:hover, .file:hover { border-color: var(--ink); }
+button:focus-visible, .file:focus-within, input:focus-visible { outline: 2px solid var(--cool); outline-offset: 2px; }
+.file input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.file { position: relative; display: inline-block; }
+.slider { display: grid; gap: 2px; font-size: 13px; }
+.slider span { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+input[type=range] { width: 100%; accent-color: var(--accent); }
+#msg { font-size: 12px; color: var(--accent); min-height: 1.2em; margin: 0; }
+.notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px 28px; border-top: 1px solid var(--rule); padding-top: 16px; }
+.notes h2 { font-family: var(--display); font-size: 18px; font-weight: 600; margin: 0 0 4px; }
+.notes p { margin: 0; color: var(--muted); font-size: 14px; max-width: 60ch; }
+.notes code { font-family: var(--mono); font-size: 12.5px; }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Fortification Spectrum</h1>
+    <p class="lede">A migraine aura as a wave crossing the visual cortex. Where the front passes, the model stops showing the scene and shows its own learned vocabulary instead: oriented atoms, laid out by an orientation map, sized by cortical magnification. Behind the front, a blind patch that heals.</p>
+  </header>
+
+  <div class="bench">
+    <section class="specimen">
+      <div class="fieldbox"><canvas id="field" width="360" height="240" aria-label="Visual field with the aura"></canvas></div>
+      <div class="readout">
+        <span>aura time <b id="tmin">00:00</b> min</span>
+        <span>front radius on cortex <b id="rmm">0.0</b> mm</span>
+        <span>front eccentricity <b id="ecc">0.0</b>°</span>
+        <span>scene <b id="src">sample photo</b></span>
+      </div>
+      <p class="cap">Fixation is the small cross. The field spans 36° × 24°; the aura lives in the right half (one hemisphere). Click the right half to choose where the wave starts.</p>
+    </section>
+
+    <aside>
+      <div>
+        <p class="label">Left visual cortex (V1), flattened</p>
+        <canvas id="cortex" width="240" height="240" aria-label="Cortex map with the travelling front"></canvas>
+        <p class="cap">Colour is preferred orientation. Fovea at left, periphery to the right; the ring is the front.</p>
+      </div>
+      <div class="row">
+        <button id="start" class="primary">Start aura</button>
+        <button id="reset">Reset</button>
+      </div>
+      <div class="slider">
+        <label for="speed">Time compression</label>
+        <input id="speed" type="range" min="10" max="90" value="40">
+        <span id="speedv">40× (one minute of aura in 1.5 s)</span>
+      </div>
+      <div class="slider">
+        <label for="gain">Atom contrast</label>
+        <input id="gain" type="range" min="20" max="100" value="70">
+      </div>
+      <div class="row">
+        <label class="file" for="upload">Use a photo<input id="upload" type="file" accept="image/*"></label>
+        <button id="cam">Use camera</button>
+      </div>
+      <p id="msg" role="status"></p>
+    </aside>
+  </div>
+
+  <section class="notes">
+    <div><h2>The wave</h2><p>Cortical spreading depolarization moves at about 3 mm per minute (Lashley timed his own aura in 1941; Hadjikhani and colleagues imaged it in 2001). The front here moves at exactly that speed across the flattened cortex.</p></div>
+    <div><h2>Why it speeds up</h2><p>The cortex maps the field by <code>w = 17.3·log((z + 0.75°)/0.75°)</code> mm (Horton &amp; Hoyt 1991). Constant speed on the cortex becomes ever faster in the periphery, so the crescent widens as it drifts out.</p></div>
+    <div><h2>Why zigzags</h2><p>Each patch of cortex prefers one edge orientation, arranged in pinwheels about 1.4 mm apart (drawn three times wider here, so a column covers more than a pixel). Unclamped, each patch shows the atom it codes for. The 64 atoms are the ones Model 6 learned from natural photographs.</p></div>
+    <div><h2>What this is not</h2><p>A model built to make the idea visible, not a medical description. Real auras vary widely. The shimmer is deliberately slow (well under three changes a second) and stops under reduced-motion settings.</p></div>
+  </section>
+</div>
+
+<script>
+const ATOMS = /*ATOMS*/[];
+const SAMPLE = "data:image/jpeg;base64,/*SAMPLE*/";
+
+const W = 360, H = 240, DEG_PER_PX = 0.1;          // 36 x 24 degrees
+const A_DEG = 0.75, K_MM = 17.3;                  // Horton & Hoyt magnification
+const SPEED_MM_MIN = 3.0;                         // spreading depolarization
+const LAMBDA = 4.2, CELL = LAMBDA / 2;            // orientation-map period (3x the real ~1.4 mm, so atoms are visible on a screen), cell size (mm)
+const EXC = 3.0, DEP = 9.0;                       // excitation band and depression zone (mm)
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+const field = document.getElementById("field"), fctx = field.getContext("2d");
+const cortex = document.getElementById("cortex"), cctx = cortex.getContext("2d");
+const msg = document.getElementById("msg");
+
+// ---- seeded random
+let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+
+// ---- orientation pinwheel map on the cortex (sum of plane waves, |k| = 2 pi / LAMBDA)
+const NW = 10, waves = [];
+for (let j = 0; j < NW; j++) { const a = Math.PI * j / NW + rnd() * 0.3, k = 2 * Math.PI / LAMBDA;
+  waves.push([k * Math.cos(a), k * Math.sin(a), rnd() * 2 * Math.PI]); }
+function prefOri(u, v) {                           // preferred visual orientation in [0, pi)
+  let re = 0, im = 0;
+  for (const [kx, ky, ph] of waves) { const p = kx * u + ky * v + ph; re += Math.cos(p); im += Math.sin(p); }
+  return ((Math.atan2(im, re) / 2) % Math.PI + Math.PI) % Math.PI;
+}
+
+// ---- atoms by orientation (only the oriented ones)
+const oriented = ATOMS.filter(a => a.c > 0.4);
+function atomFor(theta) {
+  let best = oriented[0], bd = 9;
+  for (const a of oriented) { let d = Math.abs(a.o - theta) % Math.PI; d = Math.min(d, Math.PI - d); if (d < bd) { bd = d; best = a; } }
+  return best;
+}
+function sampleAtom(a, x, y) {                      // bilinear, x,y in [0,7]
+  if (x < 0 || y < 0 || x > 7 || y > 7) return 0;
+  const x0 = Math.floor(x), y0 = Math.floor(y), x1 = Math.min(x0 + 1, 7), y1 = Math.min(y0 + 1, 7), fx = x - x0, fy = y - y0, p = a.p;
+  return (p[y0 * 8 + x0] * (1 - fx) + p[y0 * 8 + x1] * fx) * (1 - fy) + (p[y1 * 8 + x0] * (1 - fx) + p[y1 * 8 + x1] * fx) * fy;
+}
+
+// ---- visual field -> cortex (complex log), once
+const N = W * H, wu = new Float32Array(N), wv = new Float32Array(N), basis = new Float32Array(N),
+      cellPh = new Float32Array(N), eccOf = new Float32Array(N), inHemi = new Uint8Array(N);
+function cdiv(ar, ai, br, bi) { const d = br * br + bi * bi; return [(ar * br + ai * bi) / d, (ai * br - ar * bi) / d]; }
+function toCortex(xd, yd) { const zr = xd + A_DEG, zi = yd; return [K_MM * Math.log(Math.hypot(zr, zi) / A_DEG), K_MM * Math.atan2(zi, zr)]; }
+function toField(u, v) { const r = A_DEG * Math.exp(u / K_MM), t = v / K_MM; return [r * Math.cos(t) - A_DEG, r * Math.sin(t)]; }
+for (let py = 0; py < H; py++) for (let px = 0; px < W; px++) {
+  const i = py * W + px, xd = (px - W / 2) * DEG_PER_PX, yd = (H / 2 - py) * DEG_PER_PX;
+  if (xd < 0) continue;
+  inHemi[i] = 1;
+  const [u, v] = toCortex(xd, yd); wu[i] = u; wv[i] = v; eccOf[i] = Math.hypot(xd, yd);
+  // which cortical cell, and that cell's centre back in the visual field
+  const cu = (Math.floor(u / CELL) + 0.5) * CELL, cv = (Math.floor(v / CELL) + 0.5) * CELL;
+  const [cx, cy] = toField(cu, cv);
+  const theta = prefOri(cu, cv), a = atomFor(theta);
+  const ecc = Math.hypot(cx + A_DEG, cy), mag = K_MM / (ecc + A_DEG);    // mm per degree
+  const rf = 1.25 * CELL / mag;                                        // atom width in degrees
+  const dx = xd - cx, dy = yd - cy, rot = theta - a.o;                 // rotate to the exact preference
+  const lx = Math.cos(rot) * dx + Math.sin(rot) * dy, ly = -Math.sin(rot) * dx + Math.cos(rot) * dy;
+  basis[i] = sampleAtom(a, 3.5 + 8 * lx / rf, 3.5 - 8 * ly / rf);
+  cellPh[i] = ((Math.floor(u / CELL) * 7919 + Math.floor(v / CELL) * 104729) % 628) / 100;
+}
+
+// ---- cortex panel geometry: u in [0, 60] mm, v in [-30, 30] mm
+const CW = cortex.width, CH = cortex.height, U_MAX = 60, V_MAX = 30;
+const oriImg = cctx.createImageData(CW, CH);
+for (let y = 0; y < CH; y++) for (let x = 0; x < CW; x++) {
+  const u = x / CW * U_MAX, v = (0.5 - y / CH) * 2 * V_MAX, i = (y * CW + x) * 4;
+  const ecc = A_DEG * Math.exp(u / K_MM) - A_DEG;
+  if (Math.abs(v) > K_MM * Math.PI / 2 || ecc > 25) { oriImg.data[i + 3] = 255; continue; }
+  const th = prefOri(u, v), h = th / Math.PI * 360;
+  const [r, g, b] = hsl(h, 0.45, 0.42);
+  oriImg.data[i] = r; oriImg.data[i + 1] = g; oriImg.data[i + 2] = b; oriImg.data[i + 3] = 255;
+}
+function hsl(h, s, l) { const f = n => { const k = (n + h / 30) % 12, a = s * Math.min(l, 1 - l);
+  return 255 * (l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1))); }; return [f(0), f(8), f(4)]; }
+
+// ---- the scene: grey levels, plus a heavily blurred copy (what fills the blind patch)
+let scene = new Float32Array(N).fill(0.5), fill = new Float32Array(N).fill(0.5);
+const off = document.createElement("canvas"); off.width = W; off.height = H; const octx = off.getContext("2d", { willReadFrequently: true });
+function grab(src) {
+  const sw = src.videoWidth || src.naturalWidth || src.width, sh = src.videoHeight || src.naturalHeight || src.height;
+  const s = Math.max(W / sw, H / sh), dw = sw * s, dh = sh * s;
+  octx.drawImage(src, (W - dw) / 2, (H - dh) / 2, dw, dh);
+  const d = octx.getImageData(0, 0, W, H).data;
+  for (let i = 0; i < N; i++) scene[i] = (0.299 * d[4 * i] + 0.587 * d[4 * i + 1] + 0.114 * d[4 * i + 2]) / 255;
+}
+function blurFill() {
+  let a = Float32Array.from(scene), b = new Float32Array(N);
+  for (let pass = 0; pass < 3; pass++) for (const horiz of [true, false]) {
+    const R = 9;
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      let s = 0, n = 0;
+      for (let k = -R; k <= R; k++) { const xx = horiz ? x + k : x, yy = horiz ? y : y + k;
+        if (xx >= 0 && xx < W && yy >= 0 && yy < H) { s += a[yy * W + xx]; n++; } }
+      b[y * W + x] = s / n;
+    }
+    [a, b] = [b, a];
+  }
+  fill = a;
+}
+const img = new Image();
+img.onload = () => { grab(img); blurFill(); };
+img.src = SAMPLE;
+
+// ---- state
+let origin = toCortex(3.0, 1.0), t0 = null, running = false, auraMin = 0, video = null;
+const speedEl = document.getElementById("speed"), gainEl = document.getElementById("gain");
+function compression() { return +speedEl.value; }
+speedEl.oninput = () => { const c = compression(); document.getElementById("speedv").textContent =
+  `${c}× (one minute of aura in ${(60 / c).toFixed(1)} s)`; };
+document.getElementById("start").onclick = () => { auraMin = 0; running = true; t0 = performance.now(); msg.textContent = ""; };
+document.getElementById("reset").onclick = () => { running = false; auraMin = 0; };
+field.addEventListener("click", e => {
+  const r = field.getBoundingClientRect(), px = (e.clientX - r.left) / r.width * W, py = (e.clientY - r.top) / r.height * H;
+  const xd = (px - W / 2) * DEG_PER_PX, yd = (H / 2 - py) * DEG_PER_PX;
+  if (xd < 0.2) { msg.textContent = "This hemisphere's aura lives in the right half of the field."; return; }
+  origin = toCortex(xd, yd); auraMin = 0; running = true; t0 = performance.now(); msg.textContent = "";
+});
+document.getElementById("upload").onchange = e => {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader(); r.onload = () => { stopCam(); img.src = r.result; document.getElementById("src").textContent = "your photo"; };
+  r.readAsDataURL(f);
+};
+function stopCam() { if (video && video.srcObject) video.srcObject.getTracks().forEach(t => t.stop()); video = null; }
+document.getElementById("cam").onclick = async () => {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
+    video = document.createElement("video"); video.srcObject = stream; video.muted = true; video.playsInline = true;
+    await video.play(); document.getElementById("src").textContent = "camera"; msg.textContent = "";
+  } catch (err) {
+    msg.textContent = "The camera isn't available in this view. Open the GitHub Pages copy of this page, or use a photo.";
+  }
+};
+
+// ---- render
+const fimg = fctx.createImageData(W, H);
+let lastBlur = 0;
+function frame(now) {
+  if (video && video.readyState >= 2) { grab(video); if (now - lastBlur > 600) { blurFill(); lastBlur = now; } }
+  if (running) auraMin = (now - t0) / 1000 * compression() / 60;
+  const R = auraMin * SPEED_MM_MIN, gain = +gainEl.value / 100;
+  const drift = reduceMotion ? 0 : now / 1000 * 2 * Math.PI * 0.6;   // 0.6 Hz: slow shimmer, never a flash
+  const d = fimg.data, [ou, ov] = origin;
+  for (let i = 0; i < N; i++) {
+    let g = scene[i], r = g, gg = g, b = g;
+    if (inHemi[i] && running) {
+      const dist = Math.hypot(wu[i] - ou, wv[i] - ov), s = R - dist;   // s > 0: the front has passed
+      if (s > 0 && s < EXC) {
+        const env = Math.sin(Math.PI * s / EXC), sh = 0.75 + 0.25 * Math.cos(drift + cellPh[i]);
+        const a = basis[i] * env * sh * gain;
+        const base = 0.5 * (1 - env) * g + 0.5 * env * 0.45 + 0.5 * (1 - env) * g;
+        r = base + a * 0.95; gg = base + a * 0.85; b = base + a * (a > 0 ? 0.55 : 1.15);
+      } else if (s >= EXC && s < EXC + DEP) {
+        const heal = (s - EXC) / DEP, depth = heal < 0.25 ? heal / 0.25 : 1 - (heal - 0.25) / 0.75;
+        r = gg = b = g * (1 - depth) + fill[i] * depth;
+      }
+    }
+    const j = 4 * i; d[j] = r * 255; d[j + 1] = gg * 255; d[j + 2] = b * 255; d[j + 3] = 255;
+  }
+  fctx.putImageData(fimg, 0, 0);
+  // fixation cross
+  fctx.strokeStyle = "rgba(255,255,255,.8)"; fctx.lineWidth = 1; fctx.beginPath();
+  fctx.moveTo(W / 2 - 4, H / 2); fctx.lineTo(W / 2 + 4, H / 2); fctx.moveTo(W / 2, H / 2 - 4); fctx.lineTo(W / 2, H / 2 + 4); fctx.stroke();
+
+  // cortex panel
+  cctx.putImageData(oriImg, 0, 0);
+  const sx = CW / U_MAX, sy = CH / (2 * V_MAX), cx = ou * sx, cy = (V_MAX - ov) * sy;
+  if (running && R > 0) {
+    cctx.fillStyle = "rgba(0,0,0,.45)"; cctx.beginPath(); cctx.arc(cx, cy, Math.max(0, R - EXC) * sx, 0, 2 * Math.PI); cctx.fill();
+    cctx.strokeStyle = "#ffd28a"; cctx.lineWidth = Math.max(1.5, EXC * sx); cctx.beginPath();
+    cctx.arc(cx, cy, Math.max(0, R - EXC / 2) * sx, 0, 2 * Math.PI); cctx.stroke();
+  }
+  cctx.fillStyle = "#fff"; cctx.beginPath(); cctx.arc(cx, cy, 2.5, 0, 2 * Math.PI); cctx.fill();
+
+  const mm = Math.floor(auraMin), ss = Math.floor((auraMin - mm) * 60);
+  document.getElementById("tmin").textContent = `${String(mm).padStart(2, "0")}:${String(ss).padStart(2, "0")}`;
+  document.getElementById("rmm").textContent = R.toFixed(1);
+  const [fx, fy] = toField(ou + R, ov);
+  document.getElementById("ecc").textContent = Math.hypot(fx + A_DEG, fy).toFixed(1);
+  if (auraMin > 30) running = false;
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script>
